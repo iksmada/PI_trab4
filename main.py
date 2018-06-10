@@ -24,11 +24,26 @@ def nearest_neighbor(img_orig, x, y):
     return img_orig[round(x)][round(y)]
 
 
+def bilinear(img_orig, x, y):
+    base_x = math.floor(x)
+    base_y = math.floor(y)
+    if base_x < height - 1 and base_y < width - 1:
+        dx = x - base_x
+        dy = y - base_y
+        acc = (1 - dx) * (1 - dy) * img_orig[base_x][base_y]
+        acc = acc + dx * (1 - dy) * img_orig[base_x + 1][base_y]
+        acc = acc + (1 - dx) * dy * img_orig[base_x][base_y + 1]
+        acc = acc + dx * dy * img_orig[base_x][base_y + 1]
+    else:
+        acc = nearest_neighbor(img_orig, x, y)
+    return acc
+
+
 modes = ("nearest_neighbor", "bilinear", "bicubic", "lagrange")
 parser = argparse.ArgumentParser(description='Fix tilted images')
 group1 = parser.add_mutually_exclusive_group(required=True)
-group1.add_argument('-a', '--angle', type=float, help='Rotation angle counter-clockwise in degrees')
-group1.add_argument('-e', '--escala', type=float, help='Scaling factor')
+group1.add_argument('-a', '--angle', '-r', type=float, help='Rotation angle counter-clockwise in degrees')
+group1.add_argument('-e', '--escala', '-s', type=float, help='Scaling factor')
 parser.add_argument('-d', '--dimensions', type=int, nargs=2, help='Pair of values, height and width, of output image',
                     default=[-1, -1])
 parser.add_argument('-m', '--mode', type=str, help='Interpolation mode',
@@ -83,12 +98,12 @@ for x in range(new_height):
         if 0 < x_orig < height and 0 < y_orig < width:
             if MODE == modes[0]:
                 img_out[x][y] = nearest_neighbor(img_gray, x_orig, y_orig)
-            if MODE == modes[2]:
-                img_out[x][y] = img_gray[x][y]
+            if MODE == modes[1]:
+                img_out[x][y] = bilinear(img_gray, x_orig, y_orig)
 
 if OUTPUT and not OUTPUT.endswith(".png"):
     OUTPUT = OUTPUT + ".png"
 
 cv2.imshow("Original", img_orig)
 cv2.imshow("Transformed", img_out)
-cv2.waitKey(0)
+cv2.waitKey(20000)
