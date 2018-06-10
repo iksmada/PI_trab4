@@ -34,9 +34,31 @@ def bilinear(img_orig, x, y):
         acc = acc + dx * (1 - dy) * img_orig[base_x + 1][base_y]
         acc = acc + (1 - dx) * dy * img_orig[base_x][base_y + 1]
         acc = acc + dx * dy * img_orig[base_x][base_y + 1]
+        return acc
     else:
-        acc = nearest_neighbor(img_orig, x, y)
-    return acc
+        return nearest_neighbor(img_orig, x, y)
+
+
+def bicubic(img_orig, x, y):
+    def R(s):
+        def P(t):
+            if t > 0:
+                return t
+            else:
+                return 0
+        return (P(s + 2)**3 - 4*P(s + 1)**3 + 6*P(s)**3 - 4*P(s - 1)**3)/6
+    base_x = math.floor(x)
+    base_y = math.floor(y)
+    if base_x < height - 2 and base_y < width - 2:
+        acc = 0
+        dx = x - base_x
+        dy = y - base_y
+        for m in range(-1, 3):
+            for n in range(-1, 3):
+                acc = acc + img_orig[base_x + m][base_y + n] * R(m - dx) * R(dy - n)
+        return acc
+    else:
+        return bilinear(img_orig, x, y)
 
 
 modes = ("nearest_neighbor", "bilinear", "bicubic", "lagrange")
@@ -100,6 +122,8 @@ for x in range(new_height):
                 img_out[x][y] = nearest_neighbor(img_gray, x_orig, y_orig)
             if MODE == modes[1]:
                 img_out[x][y] = bilinear(img_gray, x_orig, y_orig)
+            if MODE == modes[2]:
+                img_out[x][y] = bicubic(img_gray, x_orig, y_orig)
 
 if OUTPUT and not OUTPUT.endswith(".png"):
     OUTPUT = OUTPUT + ".png"
