@@ -24,8 +24,7 @@ def nearest_neighbor(img_orig, x, y):
     return img_orig[round(x)][round(y)]
 
 
-
-modes = ("nearest_neighbor", "bilinear", "bicubic", "lagrange" )
+modes = ("nearest_neighbor", "bilinear", "bicubic", "lagrange")
 parser = argparse.ArgumentParser(description='Fix tilted images')
 group1 = parser.add_mutually_exclusive_group(required=True)
 group1.add_argument('-a', '--angle', type=float, help='Rotation angle counter-clockwise in degrees')
@@ -56,7 +55,7 @@ if ANGLE:
     # ANGLE become positive and less than 360
     ANGLE = ANGLE % 360
     # ANGLE between 0 and 180
-    simple_angle = math.fabs(ANGLE % 180 - ANGLE//180*180)
+    simple_angle = math.fabs(ANGLE % 180 - ANGLE // 180 * 180)
     if ANGLE > 90:
         height = width
         width = height
@@ -79,16 +78,13 @@ for x in range(new_height):
             x_orig = math.cos(math.radians(-ANGLE)) * (x - new_cx) - math.sin(math.radians(-ANGLE)) * (y - new_cy) + cx
             y_orig = math.sin(math.radians(-ANGLE)) * (x - new_cx) + math.cos(math.radians(-ANGLE)) * (y - new_cy) + cy
         if SCALE:
-            x_orig = x/SCALE
-            y_orig = y/SCALE
-        if x_orig > 0 and x_orig < height and y_orig > 0 and y_orig < width:
+            x_orig = x / SCALE
+            y_orig = y / SCALE
+        if 0 < x_orig < height and 0 < y_orig < width:
             if MODE == modes[0]:
                 img_out[x][y] = nearest_neighbor(img_gray, x_orig, y_orig)
             if MODE == modes[2]:
                 img_out[x][y] = img_gray[x][y]
-
-
-
 
 if OUTPUT and not OUTPUT.endswith(".png"):
     OUTPUT = OUTPUT + ".png"
