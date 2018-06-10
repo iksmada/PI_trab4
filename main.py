@@ -46,7 +46,9 @@ def bicubic(img_orig, x, y):
                 return t
             else:
                 return 0
-        return (P(s + 2)**3 - 4*P(s + 1)**3 + 6*P(s)**3 - 4*P(s - 1)**3)/6
+
+        return (P(s + 2) ** 3 - 4 * P(s + 1) ** 3 + 6 * P(s) ** 3 - 4 * P(s - 1) ** 3) / 6
+
     base_x = math.floor(x)
     base_y = math.floor(y)
     if base_x < height - 2 and base_y < width - 2:
@@ -55,7 +57,7 @@ def bicubic(img_orig, x, y):
         dy = y - base_y
         for m in range(-1, 3):
             for n in range(-1, 3):
-                acc = acc + img_orig[base_x + m][base_y + n] * R(m - dx) * R(dy - n)
+                acc = acc + img_orig[base_x + n][base_y + m] * R(m - dy) * R(dx - n)
         return acc
     else:
         return bilinear(img_orig, x, y)
@@ -82,12 +84,11 @@ DIM = args["dimensions"]
 SCALE = args["escala"]
 ANGLE = args["angle"]
 
-img_orig = cv2.imread(INPUT)
-img_gray = cv2.cvtColor(img_orig, cv2.COLOR_BGR2GRAY)
+img_orig = cv2.imread(INPUT, cv2.IMREAD_ANYCOLOR)
 
 # calculate new dimensions
-width = np.size(img_gray, 1)
-height = np.size(img_gray, 0)
+width = np.size(img_orig, 1)
+height = np.size(img_orig, 0)
 if ANGLE:
     # ANGLE become positive and less than 360
     ANGLE = ANGLE % 360
@@ -103,10 +104,12 @@ if ANGLE:
 elif SCALE:
     new_width = math.ceil(width * SCALE)
     new_height = math.ceil(height * SCALE)
-
-img_out = np.zeros((new_height, new_width), dtype=img_gray.dtype)
-width = np.size(img_gray, 1)
-height = np.size(img_gray, 0)
+if len(img_orig.shape) > 2:
+    img_out = np.zeros((new_height, new_width, img_orig.shape[2]), dtype=img_orig.dtype)
+else:
+    img_out = np.zeros((new_height, new_width), dtype=img_orig.dtype)
+width = np.size(img_orig, 1)
+height = np.size(img_orig, 0)
 for x in range(new_height):
     for y in range(new_width):
         if ANGLE:
@@ -119,11 +122,13 @@ for x in range(new_height):
             y_orig = y / SCALE
         if 0 < x_orig < height and 0 < y_orig < width:
             if MODE == modes[0]:
-                img_out[x][y] = nearest_neighbor(img_gray, x_orig, y_orig)
+                img_out[x][y] = nearest_neighbor(img_orig, x_orig, y_orig)
             if MODE == modes[1]:
-                img_out[x][y] = bilinear(img_gray, x_orig, y_orig)
+                img_out[x][y] = bilinear(img_orig, x_orig, y_orig)
             if MODE == modes[2]:
-                img_out[x][y] = bicubic(img_gray, x_orig, y_orig)
+                img_out[x][y] = bicubic(img_orig, x_orig, y_orig)
+            if MODE == modes[3]:
+                img_out[x][y] = lagrange(img_orig, x_orig, y_orig)
 
 if OUTPUT and not OUTPUT.endswith(".png"):
     OUTPUT = OUTPUT + ".png"
