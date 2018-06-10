@@ -74,8 +74,10 @@ height = np.size(img_gray, 0)
 for x in range(new_height):
     for y in range(new_width):
         if ANGLE:
-            x_orig = x
-            y_otig = y
+            new_cx, new_cy = new_height / 2.0, new_width / 2.0
+            cx, cy = height / 2.0, width / 2.0
+            x_orig = math.cos(math.radians(-ANGLE)) * (x - new_cx) - math.sin(math.radians(-ANGLE)) * (y - new_cy) + cx
+            y_orig = math.sin(math.radians(-ANGLE)) * (x - new_cx) + math.cos(math.radians(-ANGLE)) * (y - new_cy) + cy
         if SCALE:
             x_orig = x/SCALE
             y_orig = y/SCALE
