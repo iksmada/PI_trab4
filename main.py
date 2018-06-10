@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import math
 
+
 def centered_crop(img, new_height, new_width):
     width = np.size(img, 1)
     height = np.size(img, 0)
@@ -16,6 +17,10 @@ def centered_crop(img, new_height, new_width):
 
 
 def nearest_neighbor(img_orig, x, y):
+    if round(x) == height:
+        x = x - 0.5
+    if round(y) == width:
+        y = y - 0.5
     return img_orig[round(x)][round(y)]
 
 
@@ -49,21 +54,21 @@ width = np.size(img_gray, 1)
 height = np.size(img_gray, 0)
 if ANGLE:
     # ANGLE become positive and less than 360
-    ANGLE = ANGLE%360
+    ANGLE = ANGLE % 360
     # ANGLE between 0 and 180
     simple_angle = math.fabs(ANGLE % 180 - ANGLE//180*180)
     if ANGLE > 90:
         height = width
         width = height
         simple_angle = simple_angle - 90
-    new_width = round(width * math.cos(math.radians(simple_angle)) + height * math.sin(math.radians(simple_angle)))
-    new_height = round(width * math.sin(math.radians(simple_angle)) + height * math.cos(math.radians(simple_angle)))
+    new_width = math.ceil(width * math.cos(math.radians(simple_angle)) + height * math.sin(math.radians(simple_angle)))
+    new_height = math.ceil(width * math.sin(math.radians(simple_angle)) + height * math.cos(math.radians(simple_angle)))
 
 elif SCALE:
-    new_width = round(width * SCALE)
-    new_height = round(height * SCALE)
+    new_width = math.ceil(width * SCALE)
+    new_height = math.ceil(height * SCALE)
 
-img_out = np.zeros((new_height,new_width), dtype=img_gray.dtype)
+img_out = np.zeros((new_height, new_width), dtype=img_gray.dtype)
 width = np.size(img_gray, 1)
 height = np.size(img_gray, 0)
 for x in range(new_height):
@@ -73,14 +78,12 @@ for x in range(new_height):
             y_otig = y
         if SCALE:
             x_orig = x/SCALE
-            if round(x_orig) == height:
-                x_orig = x_orig-0.5
             y_orig = y/SCALE
-            if round(y_orig) == width:
-                y_orig = y_orig-0.5
-
-        if MODE == modes[0]:
-            img_out[x][y] = nearest_neighbor(img_gray, x_orig, y_orig)
+        if x_orig > 0 and x_orig < height and y_orig > 0 and y_orig < width:
+            if MODE == modes[0]:
+                img_out[x][y] = nearest_neighbor(img_gray, x_orig, y_orig)
+            if MODE == modes[2]:
+                img_out[x][y] = img_gray[x][y]
 
 
 
