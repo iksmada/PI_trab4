@@ -1,6 +1,6 @@
 results/
 venv/
-venv2/
 relatorio/
 .idea/
 *.pdf
+imagens*
