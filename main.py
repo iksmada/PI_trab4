@@ -63,6 +63,32 @@ def bicubic(img_orig, x, y):
         return bilinear(img_orig, x, y)
 
 
+def lagrange(img_orig, x, y):
+    def L(n):
+        return (
+                (-dx * (dx - 1) * (dx - 2) * img_orig[base_x - 1][base_y + n - 2]) / 6 +
+                ((dx + 1) * (dx - 1) * (dx - 2) * img_orig[base_x][base_y + n - 2]) / 2 +
+                (-dx * (dx + 1) * (dx - 2) * img_orig[base_x + 1][base_y + n - 2]) / 2 +
+                (dx * (dx + 1) * (dx - 1) * img_orig[base_x + 2][base_y + n - 2]) / 6
+        )
+
+    base_x = math.floor(x)
+    base_y = math.floor(y)
+    if base_x < height - 2 and base_y < width - 2:
+        acc = 0
+        dx = x - base_x
+        dy = y - base_y
+        return (
+                (-dy * (dy - 1) * (dy - 2) * L(1)) / 6 +
+                ((dy + 1) * (dy - 1) * (dy - 2) * L(2)) / 2 +
+                (-dy * (dy + 1) * (dy - 2) * L(3)) / 2 +
+                (dy * (dy + 1) * (dy - 1) * L(4)) / 6
+        )
+
+    else:
+        return bilinear(img_orig, x, y)
+
+
 modes = ("nearest_neighbor", "bilinear", "bicubic", "lagrange")
 parser = argparse.ArgumentParser(description='Fix tilted images')
 group1 = parser.add_mutually_exclusive_group(required=True)
