@@ -96,7 +96,7 @@ group1.add_argument('-a', '--angle', '-r', type=float, help='Rotation angle coun
 group1.add_argument('-e', '--escala', '-s', type=float, help='Scaling factor')
 parser.add_argument('-d', '--dimensions', type=int, nargs=2, help='Pair of values, height and width, of output image',
                     default=[-1, -1])
-parser.add_argument('-m', '--mode', type=str, help='Interpolation mode',
+parser.add_argument('-m', '--mode', type=str.lower , help='Interpolation mode',
                     default=modes[0], choices=modes)
 parser.add_argument('-i', '--input', type=str, help='Input image path', required=True)
 parser.add_argument('-o', '--output', type=str, help='Output image path')
@@ -136,6 +136,22 @@ else:
     img_out = np.zeros((new_height, new_width), dtype=img_orig.dtype)
 width = np.size(img_orig, 1)
 height = np.size(img_orig, 0)
+
+
+def ceil(value, max):
+    if value > max:
+        return max
+    else:
+        return value
+
+
+def floor(value, min):
+    if value < min:
+        return min
+    else:
+        return value
+
+
 for x in range(new_height):
     for y in range(new_width):
         if ANGLE:
@@ -149,16 +165,30 @@ for x in range(new_height):
         if 0 < x_orig < height and 0 < y_orig < width:
             if MODE == modes[0]:
                 img_out[x][y] = nearest_neighbor(img_orig, x_orig, y_orig)
-            if MODE == modes[1]:
+            elif MODE == modes[1]:
                 img_out[x][y] = bilinear(img_orig, x_orig, y_orig)
-            if MODE == modes[2]:
+            elif MODE == modes[2]:
                 img_out[x][y] = bicubic(img_orig, x_orig, y_orig)
-            if MODE == modes[3]:
-                img_out[x][y] = lagrange(img_orig, x_orig, y_orig)
+            elif MODE == modes[3]:
+                pixel = np.around(lagrange(img_orig, x_orig, y_orig), decimals=0)
+                if len(pixel) > 1:
+                    for i in range(len(pixel)):
+                        pixel[i] = ceil(pixel[i], 255)
+                        pixel[i] = floor(pixel[i], 0)
+
+                else:
+                    pixel = ceil(pixel, 255)
+                    pixel = floor(pixel, 0)
+                img_out[x][y] = pixel
+
+
+if DIM[0] > 0 and DIM[1] > 0:
+    img_out = centered_crop(img_out, DIM[0], DIM[1])
 
 if OUTPUT and not OUTPUT.endswith(".png"):
     OUTPUT = OUTPUT + ".png"
+    cv2.imwrite(OUTPUT, img_out)
 
 cv2.imshow("Original", img_orig)
-cv2.imshow("Transformed", img_out)
-cv2.waitKey(20000)
+cv2.imshow("Transformed using %s interpolation" % MODE, img_out)
+cv2.waitKey(0)
