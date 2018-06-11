@@ -16,6 +16,20 @@ def centered_crop(img, new_height, new_width):
     return c_img
 
 
+def ceil(value, max):
+    if value > max:
+        return max
+    else:
+        return value
+
+
+def floor(value, min):
+    if value < min:
+        return min
+    else:
+        return value
+
+
 def nearest_neighbor(img_orig, x, y):
     if round(x) == height:
         x = x - 0.5
@@ -136,22 +150,6 @@ else:
     img_out = np.zeros((new_height, new_width), dtype=img_orig.dtype)
 width = np.size(img_orig, 1)
 height = np.size(img_orig, 0)
-
-
-def ceil(value, max):
-    if value > max:
-        return max
-    else:
-        return value
-
-
-def floor(value, min):
-    if value < min:
-        return min
-    else:
-        return value
-
-
 for x in range(new_height):
     for y in range(new_width):
         if ANGLE:
