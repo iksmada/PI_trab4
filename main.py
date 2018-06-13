@@ -31,10 +31,8 @@ def floor(value, min):
 
 
 def nearest_neighbor(img_orig, x, y):
-    if round(x) == height:
-        x = x - 0.5
-    if round(y) == width:
-        y = y - 0.5
+    if round(x) == height or round(y) == width:
+        return 0
     return img_orig[round(x)][round(y)]
 
 
@@ -159,7 +157,7 @@ for x in range(new_height):
         if SCALE:
             x_orig = x / SCALE
             y_orig = y / SCALE
-        if 0 < x_orig < height and 0 < y_orig < width:
+        if -0.5 <= x_orig <= height + -0.5 and 0 <= y_orig <= width + 0.5:
             if MODE == modes[0]:
                 img_out[x][y] = nearest_neighbor(img_orig, x_orig, y_orig)
             elif MODE == modes[1]:
