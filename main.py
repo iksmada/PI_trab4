@@ -98,7 +98,6 @@ def lagrange(img_orig, x, y):
                 (-dy * (dy + 1) * (dy - 2) * L(3)) / 2 +
                 (dy * (dy + 1) * (dy - 1) * L(4)) / 6
         )
-
     else:
         return bilinear(img_orig, x, y)
 
@@ -169,13 +168,17 @@ for x in range(new_height):
                 img_out[x][y] = bicubic(img_orig, x_orig, y_orig)
             elif MODE == modes[3]:
                 pixel = np.around(lagrange(img_orig, x_orig, y_orig), decimals=0)
-                if len(pixel) > 1:
+                if np.issubdtype(img_orig.dtype, np.floating):
+                    max = 1.
+                else:
+                    max = np.iinfo(img_orig.dtype).max
+                if isinstance(pixel, np.ndarray):
                     for i in range(len(pixel)):
-                        pixel[i] = ceil(pixel[i], 255)
+                        pixel[i] = ceil(pixel[i], max)
                         pixel[i] = floor(pixel[i], 0)
 
                 else:
-                    pixel = ceil(pixel, 255)
+                    pixel = ceil(pixel, max)
                     pixel = floor(pixel, 0)
                 img_out[x][y] = pixel
 
