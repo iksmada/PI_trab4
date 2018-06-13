@@ -181,7 +181,7 @@ for x in range(new_height):
                 img_out[x][y] = pixel
 
 
-if DIM[0] > 0 and DIM[1] > 0:
+if new_width > DIM[0] > 0 and new_height > DIM[1] > 0:
     img_out = centered_crop(img_out, DIM[0], DIM[1])
 
 if OUTPUT:
